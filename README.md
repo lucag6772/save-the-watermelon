@@ -1,4 +1,3 @@
-# save-the-watermelon
 
 # Save the Watermelon
 
