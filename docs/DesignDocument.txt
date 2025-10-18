@@ -1,0 +1,88 @@
+# Save the Watermelon - Design Document
+
+## Problem Statement & Target Audience
+"Save the Watermelon" is a terminal-based word-guessing game where players, acting as "elite fruit operators," guess letters or entire words to reveal a secret word and prevent the watermelon from being "sliced" (losing lives). The game features difficulty levels (Easy, Medium, Hard) and multiple levels per session, enhancing the classic Hangman-style gameplay with a military-themed narrative. The target audience includes beginner to intermediate Python developers learning object-oriented programming, file handling, and game logic, as well as casual players who enjoy engaging, text-based puzzles with a humorous twist.
+
+## Game Rules & Win/Lose Conditions
+- The game begins with a main menu prompting the player to confirm readiness ("yes" to proceed, "no" to exit).
+- The player selects a difficulty (Easy, Medium, Hard), which determines the word pool (from `data/words_easy.txt`, `words_medium.txt`, or `words_hard.txt`) and maximum failed attempts (Easy: 15, Medium: 10, Hard: 5).
+- The game consists of 3 levels, each requiring the player to guess a unique word (no repeats within a session).
+- Players can guess a single letter (case-insensitive) or the entire word.
+- Correct letter guesses reveal all occurrences in the word; correct full-word guesses win the level immediately.
+- Incorrect guesses (letters or full words) deduct one attempt.
+- A level is won when the word is fully revealed (all letters guessed or full word matched).
+- The game is won by completing all 3 levels.
+- The game is lost if failed attempts meet or exceed the maximum for the chosen difficulty in any level.
+- Invalid inputs (e.g., non-letters) are not explicitly rejected but treated as incorrect guesses.
+- No replay option is offered after win/loss; the player must restart the program.
+
+## Core Features (Must-Have) vs Stretch Goals (Nice-to-Have)
+### Must-Have Features:
+- Main menu to confirm readiness ("yes"/"no").
+- Difficulty selection (Easy, Medium, Hard) with corresponding word lists and attempt limits.
+- Random word selection from difficulty-specific files, ensuring no repeats in a session.
+- Display current level, masked word (e.g., `_ p p _ _`), and remaining slices.
+- Handle single-letter and full-word guesses, updating the game state accordingly.
+- Track guessed letters to display progress and prevent duplicates implicitly (via game logic).
+- Multi-level progression (3 levels per game).
+- Win condition: Complete 3 levels.
+- Lose condition: Exceed max failed attempts in any level.
+- Clear console output with dividers and thematic messages.
+
+### Stretch Goals (Nice-to-Have, Not Implemented):
+- ASCII art showing watermelon "slicing" as attempts decrease.
+- Explicit input validation for non-alphabetic guesses (e.g., reject numbers/symbols).
+- Hint system (e.g., reveal a letter for a penalty).
+- Scoreboard tracking wins/losses or best streaks.
+- Word categories (e.g., fruits, animals) within difficulty files.
+- Replay option after game end without restarting the program.
+
+## Basic Flow Diagram
+- **Start**:
+  - Display main menu → Prompt "ARE YOU READY?".
+  - If "no": Exit with message.
+  - If "yes": Proceed to difficulty selection.
+- **Difficulty Selection**:
+  - Prompt for difficulty (Easy, Medium, Hard).
+  - If invalid: Reprompt.
+  - If valid: Initialize `GameState` with difficulty and max attempts.
+- **Game Loop (3 Levels)**:
+  - Select a new, unused word for the current level.
+  - Display: Level number, remaining slices, masked word.
+  - Prompt for a guess (letter or word).
+  - Process guess:
+    - If full word matches: Win level, advance to next.
+    - If letter correct: Update masked word, check if level won.
+    - If incorrect: Deduct attempt, check if game over.
+  - If game over (attempts exhausted): Display loss message, exit.
+  - If level won: Increment level, select new word, repeat.
+- **End**:
+  - After 3 levels: Display win message, exit.
+
+## Data Design
+- **CurrentWord**: String storing the secret word (e.g., "apple").
+- **GuessedLetters**: List of guessed letters (lowercase) to track revealed letters (e.g., `['a', 'p']`).
+- **FailedAttempts**: Integer tracking incorrect guesses (starts at 0).
+- **CurrentAttempts**: Integer tracking total guesses (used for game over check, potentially redundant with FailedAttempts).
+- **MaxFailedAttempts**: Integer based on difficulty (Easy: 15, Medium: 10, Hard: 5).
+- **used_words**: Class-level list (in `GameState`) to prevent word reuse in a session.
+- **Difficulty**: String ("EASY", "MEDIUM", "HARD") determining word file and max attempts.
+- **Word Lists**: Stored in `data/words_<difficulty>.txt` as plain text (one word per line, e.g., ["cat", "dog"]).
+
+## Module/Function Responsibilities
+- **game.py**:
+  - `main_game_loop`: Entry point; runs main menu, difficulty selection, initializes `GameState`, and starts `run_game_loop`.
+  - `GameState` class:
+    - Manages game state: word, guesses, attempts, difficulty.
+    - Methods: `select_next_word` (picks unused word), `make_guess` (processes guesses), `did_we_guess_word` (checks win), `is_game_over` (checks loss), `get_word_string` (generates masked word), `get_attempt_score` (shows remaining slices).
+  - `run_game_loop`: Manages level progression, displays state, and handles guesses.
+- **gamelogic.py**:
+  - `run_main_menu`: Displays welcome message, handles "yes"/"no" input.
+  - `run_difficulty_select`: Prompts for and validates difficulty.
+  - `get_possible_words_from_difficulty`: Loads words from difficulty-specific file.
+  - `choose_random_word_from_difficulty`: Selects random word from list.
+- **utility.py**:
+  - `print_divider`: Prints formatted dividers with optional text and spacing.
+  - `prompt_input`: Captures and lowercases user input.
+- **data/**:
+  - `words_easy.txt`, `words_medium.txt`, `words_hard.txt`: Store word lists for each difficulty
